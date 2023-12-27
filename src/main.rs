@@ -1,65 +1,14 @@
-use rand::Rng;
-use std::cmp::Ordering;
-use std::io;
+use inquire::{error::InquireError, Select};
 
-mod utils {
-    pub mod guess_handler;
-}
-
-use utils::guess_handler::handle_guess_result;
+mod guessing_number;
 
 fn main() {
-    println!("Guess the secret number between 1 and 100!");
-
-    let sercet_number = rand::thread_rng().gen_range(1..=100);
-    let mut wrong_input = false;
-    let mut number_of_lives = 10;
-
-    loop {
-        match wrong_input {
-            true => println!("You should choose a number."),
-            false => println!("Please input your guess."),
-        }
-
-        let mut guess = String::new();
-
-        io::stdin()
-            .read_line(&mut guess)
-            .expect("Failed to read line");
-
-        match guess {
-            _ if guess.trim() == "quit" || guess.trim() == "exit" || guess.trim() == "q" => {
-                println!("You quit!");
-                break;
-            }
-            _ => (),
-        }
-
-        let guess: u32 = match guess.trim().parse() {
-            Ok(num) => {
-                wrong_input = false;
-                num
-            }
-            Err(_) => {
-                wrong_input = true;
-                continue;
-            }
-        };
-        match guess.cmp(&sercet_number) {
-            Ordering::Less => {
-                if handle_guess_result(Ordering::Less, &mut number_of_lives) {
-                    break;
-                }
-            }
-            Ordering::Greater => {
-                if handle_guess_result(Ordering::Greater, &mut number_of_lives) {
-                    break;
-                }
-            }
-            Ordering::Equal => {
-                println!("Congradulations, You won!");
-                break;
-            }
-        }
+    let options: Vec<&str> = vec!["1- Guessing the secret number", "2- Gussing the secret word"];
+    let selected_game: Result<&str, InquireError> = Select::new("Choose one of the following:", options).prompt();
+    match selected_game {
+        Ok(choice) => println!("{}! That's mine too!", choice),
+        Err(_) => println!("There was an error, please try again"),
     }
+
+    guessing_number::run_guessing_number();
 }
